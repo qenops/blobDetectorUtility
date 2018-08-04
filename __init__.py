@@ -1,6 +1,13 @@
 import cv2
 import numpy as np
 
+def cv2CloseWindow(window):
+    cv2.destroyWindow(window)
+    cv2.waitKey(1)
+    cv2.waitKey(1)
+    cv2.waitKey(1)
+    cv2.waitKey(1)
+
 # Generate and display the images
 def update(dummy=None):
     params = cv2.SimpleBlobDetector_Params()
@@ -48,15 +55,15 @@ def setup(minArea=16,maxArea=75,minThreshold=0,maxThreshold=150):
     cv2.createTrackbar('Min Convexity', 'Blob Detector', 90, 100, update)
     cv2.createTrackbar('Max Convexity', 'Blob Detector', 100, 100, update)
 
-def blobDetectorParameterTune(image):
+def tuneFunction(function):
     setup()
-    img = image
     while True:
         ch = 0xFF & cv2.waitKey(100)
         if ch == 27 or ch == -1:
             break
         params = update()
         detector = cv2.SimpleBlobDetector_create(params) 
+        img = function()
         frame = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # inverse the image
         frame2 = np.invert(frame)
@@ -67,7 +74,15 @@ def blobDetectorParameterTune(image):
         output = img.copy()
         output = cv2.drawKeypoints(output, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         cv2.imshow('Blob Detector Output', output)
-    cv2.destroyAllWindows()
+    cv2CloseWindow('Blob Detector')
+    cv2CloseWindow('Blob Detector Output')
+    return params
+
+def tuneImg(image):
+    return tuneFunction(lambda: image)
+
+def tuneCam(camera):
+    return tuneFunction(camera.read)
 
 '''
 import cv2
